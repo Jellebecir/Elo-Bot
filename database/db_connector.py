@@ -162,37 +162,17 @@ class DBConnector:
 
     def get_channel_leaderboard(self, channel_id):
         with self.connection_pool.get_connection() as connection:
-            cursor = connection.cursor()
-            sql = "SELECT " \
-                  "c1.user_id, " \
-                  "COUNT(m1.winner_id) AS wins, " \
-                  "COUNT(m2.loser_id) AS losses, " \
-                  "c1.ranking " \
-                  "FROM {channel_id} c1 " \
-                  "LEFT JOIN `match` m1 ON c1.user_id = m1.winner_id AND m1.channel_id = '{channel_id}' " \
-                  "LEFT JOIN `match` m2 ON c1.user_id = m2.loser_id AND m2.channel_id = '{channel_id}' " \
-                  "GROUP BY c1.user_id " \
-                  "HAVING COUNT(m1.winner_id) + COUNT(m2.loser_id) > 0 " \
-                  "ORDER BY c1.ranking DESC, wins DESC;".format(channel_id=channel_id)
-            cursor.execute(sql)
-            results = cursor.fetchall()
-            cursor.close()
-            print(" - RETRIEVED LEADERBOARD FROM DATABASE")
-            return results
-
-    def get_channel_leaderboard2(self, channel_id):
-        with self.connection_pool.get_connection() as connection:
             matches = get_matches(channel_id, connection)
             rankings = get_rankings(channel_id, connection)
             players = get_match_users(channel_id, connection)
             rows = []
             for player_id in players:
-                row = [player_id,
-                       get_player_wins(player_id, matches),
-                       get_player_losses(player_id, matches),
-                       [rank[1] for rank in rankings if rank[0] == player_id][0]]
-                rows.append(row)
-            rows.sort(key=lambda x: x[3], reverse=True)
+                wins = get_player_wins(player_id, matches)
+                losses = get_player_losses(player_id, matches)
+                winrate = wins/(wins+losses) * 100
+                rating = [rank[1] for rank in rankings if rank[0] == player_id][0]
+                row = [player_id, wins, losses, winrate, rating]
+            rows.sort(key=lambda x: x[4], reverse=True)
             print(" - RETRIEVED LEADERBOARD FROM DATABASE")
             return rows
 
