@@ -1,7 +1,7 @@
 import asyncio
 import os
 import sys
-from database.db_connector import insert_match, get_user_ranking
+from database.db_connector_deprecated import insert_match, get_user_ranking
 from util.custom_exceptions import \
     NoUserProvidedException, \
     EloBotAsUserException, \
@@ -69,7 +69,6 @@ class BeatMeHandler:
             )
 
     async def handle_beat_me(self):
-
         if not self.winner_id:
             raise NoUserProvidedException()
 

@@ -14,9 +14,8 @@ from util.custom_exceptions import \
 
 env_path = Path('') / '.env'
 load_dotenv(dotenv_path=env_path)
-token = os.environ['SLACK_TOKEN']
+token = os.environ['TEST_SLACK_TOKEN']
 client = slack.WebClient(token=token)
-
 
 def get_slack_client():
     return client
